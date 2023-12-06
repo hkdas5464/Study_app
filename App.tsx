@@ -1,52 +1,84 @@
-import React from 'react';
-import { SafeAreaView, StyleSheet, Text, View,ScrollView } from 'react-native';
-import YouTube from 'react-native-youtube-iframe';
+import React,{useState,useEffect} from 'react';
+import { SafeAreaView, StyleSheet, View,ScrollView ,Button,Dimensions} from 'react-native';
+import YouTube  from 'react-native-youtube-iframe';
 import Video from './Data';
-import { Divider } from 'react-native-paper';
+import { Divider, Text } from 'react-native-paper';
 import CardComponent from './Cards/Card';
+import Tabs from './Cards/Tabs';
+import Header from './Cards/Header';
+import Orientation from 'react-native-orientation-locker';
+import { Chip } from 'react-native-paper';
 
 
 
+const App = () => {
+  const [isFullScreen, setIsFullScreen] = useState(false);
+  const [play,setPlay] = useState('bsUo6WpNXes')
 
-const App: React.FC = () => {
+  useEffect(() => {
+    const onOrientationChange = (orientation) => {
+      if (orientation === 'LANDSCAPE') {
+        setIsFullScreen(true);
+      } else {
+        setIsFullScreen(false);
+      }
+    };
 
-  interface MyUrl {
-    youtubeurl: string;
-  }
-  const [url,setUrl] = React.useState<string>('tAzfDY63Vuo')
-  const speciesList = [
-    'Panthera leo', 'Loxodonta africana', 'Giraffa camelopardalis', 'Equus zebra','Loxodonta africana', 'Giraffa camelopardalis', 'Equus zebra','Loxodonta africana', 'Giraffa camelopardalis', 'Equus zebra', 'Spheniscidae', 'Canis lupus', 'Ursus arctos', 'Macropus rufus'
-    // Add more species as needed
-  ];
+    Orientation.addOrientationListener(onOrientationChange);
 
-  const pushUrl=(id)=>{
-  setUrl(id)
-  }
+    return () => {
+      Orientation.removeOrientationListener(onOrientationChange);
+    };
+  }, []);
+
+  const onFullScreenChange = (fullScreenStatus) => {
+    if (fullScreenStatus) {
+      Orientation.lockToLandscape();
+    } else {
+      Orientation.lockToPortrait();
+    }
+  };
+
+
+
+  
 
   return (
     <View style={styles.container}>
       <YouTube
-        videoId={url}
-        height={200}
-        width={'100%'}
+        videoId={play}
+        play={true}
+        height={220}
+        controls={1}
+        onChangeState={(event) => console.log(event)}
+        onChangeQuality={(event) => console.log(event)}
+        onError={(e) => console.log(e)}
+        onReady={() => console.log('ready')}
+        onFullscreenChange={onFullScreenChange}
+        webViewStyle={{ flex: 1 }}
+        style={isFullScreen ? styles.fullScreen : styles.normalScreen}
       />
-      <View>
+      
+      <View style={{ alignItems: 'center',backgroundColor:"#2596be",padding:10}}>
+      <Text>KHAN_SIR_HISTORY</Text>
+        
+      
+    </View>
+      
       <ScrollView>
+      <View>
         {Video.map((e)=>{
           return(
             <View >
-              <Text onPress={()=>{pushUrl(e.url)}} key={e.id}><View><CardComponent  title={e.url} id={e.id}/></View>
-  </Text>
-  <Divider/>
-              
+              <Text key={e.id} onPress={()=>{setPlay(e.url)}}><Tabs title={e.name} id={e.id}/>
+              </Text>
+              <Divider/>
               </View>
           )
         })}
-      </ScrollView>
       </View>
+      </ScrollView>
     </View>
-    
-   
     
   );
 };
@@ -54,7 +86,13 @@ const App: React.FC = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
+  },
+  normalScreen: {
+    aspectRatio: 16 / 9,
+  },
+  fullScreen: {
+    width: Dimensions.get('window').height,
+    height: Dimensions.get('window').width,
   },
 });
 
